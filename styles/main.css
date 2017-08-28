@@ -1,0 +1,153 @@
+/**********
+  GENERAL
+**********/
+
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,500');
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+}
+
+body > :not(#toolbar) {
+    margin: 16px;
+}
+
+/********
+  FORMS
+********/
+
+label {
+    display: block;
+    margin-bottom: 16px;
+}
+
+label > input, label > select, label > textarea {
+    display: block;
+    margin-top: 4px;
+}
+
+input {
+    padding: 4px;
+    font: inherit;
+}
+
+textarea {
+    border: 1px solid #CCCCCC;
+    font-family: inherit;
+    font-size: 1em;
+}
+
+/* TODO: Improve on the native `select`. */
+
+/**********
+  BUTTONS
+**********/
+
+button {
+    border: 1px solid #CCCCCC;
+    background-color: #FFFFFF;
+    padding: 8px 16px;
+    font-family: inherit;
+    color: inherit;
+    font-size: 0.9em;
+}
+
+button:active {
+    background-color: #EEEEEE;
+}
+
+button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/**********
+  TOOLBAR
+**********/
+
+#toolbar {
+    width: 100%;
+    display: flex;
+    background-color: #000000;
+    padding: 4px;
+    margin-bottom: 8px;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+#toolbar > a {
+    color: #FFFFFF;
+    margin: 8px;
+}
+
+#toolbar > a:active {
+    color: #00CCFF;
+}
+
+#toolbar > a:last-child {
+    margin-left: auto;
+}
+
+.logo {
+    font-size: 1.2em;
+    font-weight: 700;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/********
+  LINKS
+********/
+
+a {
+    color: #00AAFF;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/*******************
+  DEFINITION LISTS
+*******************/
+
+dt {
+    font-weight: 500;
+    font-family: inherit;
+}
+
+dl > div {
+    margin-top: 16px;
+}
+
+dd {
+    margin: 0;
+    padding-top: 4px;
+}
+
+/*********
+  TABLES
+*********/
+
+table {
+    margin: 8px 0;
+    border-collapse: collapse;
+}
+
+th {
+    font-weight: 500;
+    background-color: #EEEEEE;
+}
+
+th, td {
+    padding: 8px;
+    border: 1px solid #CCCCCC;
+    text-align: center;
+}

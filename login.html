@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+    <title>Login</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.1.5/js/iziToast.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.1.5/css/iziToast.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+
+    <!-- Scripts -->
+    <script src="/scripts/backend.js"></script>
+    <script>
+const DEFAULT_REDIRECT = '/';
+
+function submittify(e) {
+    e.preventDefault();
+
+    let email     = document.getElementById('email');
+    let password  = document.getElementById('password');
+    let submitBtn = document.getElementById('submit-btn');
+
+    let body = {
+        email: email.value,
+        password: password.value
+    };
+
+    let redirect =
+        new URLSearchParams(location.search).get('then')
+        || DEFAULT_REDIRECT;
+
+    submitBtn.disabled = true;
+
+    BACKEND.post('/login', body)
+        .then(res => {
+            if (res.ok) {
+                return res.text()
+                    .then(text => {
+                        localStorage['token'] = btoa(text);
+                        location.href = redirect;
+                    });
+            } else {
+                switch (res.status) {
+                    case 422:
+                        showError('Incorrect email or password.');
+                        break;
+                    default:
+                        showError('An unknown error occurred.');
+                }
+            }
+        })
+        .catch(e => {
+            showError('An unknown error occurred.');
+            console.error(e);
+        })
+        .then(() => {
+            submitBtn.disabled = false;
+        });
+}
+
+function showError(error) {
+    iziToast.error({ title: 'Error', message: error });
+}
+    </script>
+</head>
+<body>
+    <h1>Login</h1>
+    <form onsubmit="submittify(event);">
+        <label>
+            Email
+            <input id="email" type="email" required autofocus>
+        </label>
+
+        <label>
+            Password
+            <input id="password" type="password" required>
+        </label>
+
+        <div>
+            <button id="submit-btn" type="submit">Login</button>
+        </div>
+    </form>
+</body>
+</html>

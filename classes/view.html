@@ -1,0 +1,188 @@
+<!doctype html>
+<html>
+<head>
+    <title>View Class</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    <!-- Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/openlayers/4.3.1/ol.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/4.3.1/ol.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.6/marked.min.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/classes.css">
+
+    <!-- Scripts -->
+    <script src="/scripts/belts.js"></script>
+    <script src="/scripts/permissions.js"></script>
+    <script src="/scripts/backend.js"></script>
+    <script src="/scripts/toolbar.js"></script>
+    <script>
+let showingEditLink = false;
+function showEditLink(id) {
+    let link = document.getElementById('edit-link');
+    link.href  = `/classes/edit?id=${id}`;
+    link.style.display = '';
+    showingEditLink = true;
+}
+
+let showingRollLink = false;
+function showRollLink(id) {
+    let link = document.getElementById('roll-link');
+    link.href = `/classes/roll?id=${id}`;
+    link.style.display = '';
+    showingRollLink = true;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Mount the toolbar.
+    TOOLBAR.mount(document.getElementById('toolbar'));
+    
+    let id = parseInt(new URLSearchParams(location.search).get('id'));
+    if (isNaN(id)) {
+        id = 1;
+    }
+
+    if (!showingEditLink && BACKEND.can(PERMISSIONS.EDIT_CLASSES)) {
+        showEditLink(id);
+    }
+
+    if (!showingRollLink && BACKEND.can(PERMISSIONS.ATTENDANCE)) {
+        showRollLink(id);
+    }
+
+    BACKEND.get(`/classes/${id}`)
+        .then(res => {
+            if (res.ok) {
+                return res.json().then(clas => {
+                    if (!showingEditLink
+                    && BACKEND.can(PERMISSIONS.EDIT_OWN_CLASSES)
+                    && BACKEND.is(clas.instructor)) {
+                        showEditLink(id);
+                    }
+
+                    if (!showingRollLink && BACKEND.is(clas.instructor)) {
+                        showRollLink(id);
+                    }
+
+                    return showClass(clas);
+                });
+            } else if (res.status === 404) {
+                showError('There is no class with the requested ID.');
+            } else {
+                showError('An unknown error occurred.');
+            }
+        })
+        .catch(e => {
+            console.error(e);
+            showError('An unknown error ocurred.');
+        });
+});
+
+function showError(message) {
+    let main = document.getElementById('main');
+    let el = document.createElement('span');
+    el.textContent = message;
+    // Remove loading text.
+    while (main.firstChild) {
+        main.removeChild(main.firstChild);
+    }
+    // Add error text.
+    main.appendChild(el);
+}
+
+function showClass(clas) {
+    let main = document.getElementById('main');
+
+    // Remove loading text.
+    while (main.firstChild) {
+        main.removeChild(main.firstChild);
+    }
+
+    // Add name.
+    let name = document.createElement('h1');
+    name.textContent = clas.name;
+    main.appendChild(name);
+
+    // Add instructor.
+    let instrEl = document.createElement('p');
+    instrEl.style.display = 'none';
+    main.appendChild(instrEl);
+
+    if (typeof clas.instructor === 'number') {
+        BACKEND.get(`/users/${clas.instructor}`)
+            .then(res => res.json())
+            .then(instructor => {
+                if (instructor.name) {
+                    instrEl.appendChild(document.createTextNode(
+                        'Instructed by '
+                    ));
+
+                    let link = document.createElement('a');
+                    link.textContent = instructor.name;
+                    link.href = `/users/view?id=${clas.instructor}`;
+                    instrEl.appendChild(link);
+
+                    instrEl.appendChild(document.createTextNode('.'));
+
+                    instrEl.style.display = '';
+                }
+            });
+    }
+
+    // Add description.
+    if (clas.notes) {
+        let desc = document.createElement('div');
+        desc.innerHTML = marked(clas.notes);
+        main.appendChild(desc);
+    }
+
+    // Add location.
+    if (typeof clas.lat === 'number' && typeof clas.long === 'number') {
+        let mapEl = document.createElement('div');
+        mapEl.id = 'map';
+        main.appendChild(mapEl);
+
+        let coords  = ol.proj.fromLonLat([clas.long, clas.lat]);
+        let feature = new ol.Feature({
+            geometry: new ol.geom.Point(coords),
+            name: clas.name
+        });
+
+        new ol.Map({
+            view: new ol.View({ center: coords, zoom: 16 }),
+            layers: [
+                new ol.layer.Tile({ source: new ol.source.OSM() }),
+                new ol.layer.Vector({
+                    source: new ol.source.Vector({ features: [feature] }),
+                    style: new ol.style.Style({
+                        image: new ol.style.Icon({
+                            anchor: [0.5, 1.0],
+                            anchorXUnits: 'fraction',
+                            anchorYUnits: 'fraction',
+                            opacity: 1.0,
+                            scale: 0.5,
+                            src: '/images/marker.png'
+                        })
+                    })
+                })
+            ],
+            target: mapEl
+        });
+    }
+}
+    </script>
+</head>
+<body>
+    <header id="toolbar"></header>
+    <section id="main">
+        <span>Loading…</span>
+    </section>
+    <section>
+        <a id="edit-link" style="display: none;">Edit</a>
+        <a id="roll-link" style="display: none;">Roll</a>
+    </section>
+</body>
+</html>

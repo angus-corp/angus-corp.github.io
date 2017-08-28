@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+<head>
+    <title>Create User</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.1.5/js/iziToast.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.1.5/css/iziToast.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+
+    <!-- Scripts -->
+    <script src="/scripts/belts.js"></script>
+    <script src="/scripts/permissions.js"></script>
+    <script src="/scripts/backend.js"></script>
+    <script src="/scripts/toolbar.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Mount the toolbar.
+    TOOLBAR.mount(document.getElementById('toolbar'));
+    
+    // Populate belts.
+    let belts = document.getElementById('belt');
+    Object.keys(BELTS).forEach(belt => {
+        let id = BELTS[belt];
+        belts.appendChild(option(BELTS.name(id), id));
+    });
+
+    // Populate classes.
+    BACKEND.get('/classes')
+        .then(res => res.json())
+        .then(classes => {
+            let select = document.getElementById('class');
+            select.appendChild(option('None', 'NONE'));
+            classes.forEach(clas => {
+                select.appendChild(option(clas.name, clas.id));
+            });
+
+            // Finish successfully.
+            document.getElementById('form').style.display = '';
+            document.getElementById('loading').remove();
+            document.getElementById('error').remove();
+        })
+        .catch(e => {
+            // Finish with an error.
+            document.getElementById('form').remove();
+            document.getElementById('loading').remove();
+            document.getElementById('error').style.display = '';
+        });
+});
+
+function submittify(e) {
+    e.preventDefault();
+    
+    let submitBtn = document.getElementById('submit-btn');
+
+    let data = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value,
+        birthday: document.getElementById('birthday').value,
+        belt: parseInt(document.getElementById('belt').value),
+        class: document.getElementById('class').value
+    };
+
+    data.class = data.class === 'NONE' ? null : parseInt(data.class);
+    
+    submitBtn.disabled = true;
+    BACKEND.post('/users', data)
+        .then(res => {
+            if (res.ok) {
+                return res.json()
+                    .then(id => location.href = `/users/view?id=${id}`);
+            }
+
+            switch (res.status) {
+                case 401:
+                    showError('You do not have permission to do that.');
+                    break;
+                case 409:
+                    showError('That email address is already taken.');
+                    break
+                case 422:
+                    showError('Outdated form; please refresh.');
+                    break;
+                default:
+                    showError('An unknown error occurred.');
+            }
+        })
+        .catch(e => showError('An unknown error occurred.'))
+        .then(() => submitBtn.disabled = false);
+}
+
+function option(text, value) {
+    let option = document.createElement('option');
+    option.textContent = text;
+    option.value = value;
+    return option;
+}
+
+function showError(error) {
+    iziToast.error({ title: 'Error', message: error });
+}
+    </script>
+</head>
+<body>
+    <header id="toolbar"></header>
+    <span id="loading">Loading…</span>
+    <span id="error" style="display: none;">
+        An unknown error occurred.
+    </span>
+    <form id="form" onsubmit="submittify(event);" style="display: none;">
+        <label>
+            Name
+            <input id="name" type="text" required>
+        </label>
+        <label>
+            Email
+            <input id="email" type="email" required>
+        </label>
+        <label>
+            Password
+            <input id="password" type="password" required>
+        </label>
+        <label>
+            Birthday
+            <input id="birthday"
+                   type="date"
+                   placeholder="YYYY-MM-DD"
+                   pattern="^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$"
+                   required>
+        </label>
+        <label>
+            Belt
+            <select id="belt" required></select>
+        </label>
+        <label>
+            Class
+            <select id="class" required></select>
+        </label>
+        <button id="submit-btn" type="submit">Create</button>
+    </form>
+</body>
+</html>

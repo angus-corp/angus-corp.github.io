@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Match</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono" rel="stylesheet">
+    <link href="main.css" rel="stylesheet">
+    <script src="main.js"></script>
+</head>
+<body>
+    <section class="red actionpad">
+        <button id="red-up">▲</button>
+        <button id="red-flag">⚑</button>
+    </section>
+    <section class="blue actionpad">
+        <button id="blue-up">▲</button>
+        <button id="blue-flag">⚑</button>
+    </section>
+    <div class="config-container"><section class="config">
+        <button id="pause-btn">Play</button>
+        <button id="end-btn">End Match - Draw</button>
+
+        <label>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Round
+            <input id="round-inp" type="number" min="1">
+        </label>
+        <label>
+            Match Time
+            <input id="match-time-m-inp" type="number" min="0">
+            :
+            <input id="match-time-s-inp" type="number" min="0" max="59">
+        </label>
+        <label>
+            Break Time
+            <input id="break-time-m-inp" type="number" min="0">
+            :
+            <input id="break-time-s-inp" type="number" min="0" max="59">
+        </label>
+
+        <h2>Red Player</h2>
+        <label>
+            &nbsp;&nbsp;&nbsp;Points
+            <input id="red-points" type="number" min="0">
+        </label>
+        <label>
+            Penalties
+            <input id="red-penalties" type="number" min="0" max="8">
+        </label>
+
+        <h2>Blue Player</h2>
+        <label>
+            &nbsp;&nbsp;&nbsp;Points
+            <input id="blue-points" type="number" min="0">
+        </label>
+        <label>
+            Penalties
+            <input id="blue-penalties" type="number" min="0" max="8">
+        </label>
+    </section></div>
+</body>
+</html>

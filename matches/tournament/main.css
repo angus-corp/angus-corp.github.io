@@ -1,0 +1,157 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    color: #EEEEEE;
+    background-color: #111111;
+}
+
+main {
+    display: flex;
+    justify-content: center;
+}
+
+.line {
+    background-color: currentColor;
+}
+
+.match-box {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    border: 1px solid #FFAA55;
+    padding: 4px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    cursor: pointer;
+}
+
+.match-box.complete {
+    border-color: #77FF77;
+    cursor: default;
+}
+
+.match-box.unready {
+    border-color: #777777;
+    cursor: default;
+}
+
+.match-entry {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 4px;
+    box-sizing: border-box;
+}
+
+.match-entry :first-child {
+    flex-shrink: 100;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.match-entry.winner {
+    color: #77FF77;
+}
+
+.match-entry.bye {
+    color: #777777;
+    font-style: italic;
+}
+
+.match-entry.pending {
+    color: #777777;
+    font-style: italic;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+textarea {
+    border: 1px solid #777777;
+    background-color: #111111;
+    color: inherit;
+    font: inherit;
+    padding: 8px;
+    min-height: 180px;
+    min-width: 360px;
+    margin-bottom: 24px;
+}
+
+form > :first-child {
+    margin-top: 16px;
+}
+
+input[type=number], input[type=text], input[type=file] {
+    margin-bottom: 24px;
+    margin-top: 8px;
+    padding: 0.5em;
+    font-size: 0.8em;
+    display: block;
+}
+
+input[type=radio] {
+    margin-top: 8px;
+}
+
+.radio-group {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+h1 {
+    margin-bottom: 0;
+}
+
+p {
+    color: #777777;
+    margin-top: 8px;
+    margin-bottom: 24px;
+}
+
+textarea:invalid {
+    box-shadow: none;
+    outline: none;
+    border-color: #FF4422;
+}
+
+button {
+    padding: 16px 24px;
+    margin-right: 8px;
+    font-size: 0.8em;
+    border: 1px solid #EEEEEE;
+    background-color: transparent;
+    color: #EEEEEE;
+    position: relative;
+}
+
+button::before {
+    content: ' ';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 0;
+    transition: height .1s ease-out;
+    background-color: #2266CC;
+    z-index: -1;
+}
+
+button:hover::before {
+    height: 100%;
+}
+
+button:active::before {
+    background-color: #113366;
+    height: 100%;
+}
+
+.bracket {
+	width: 100%;
+	height: 100%;
+}

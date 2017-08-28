@@ -1,0 +1,231 @@
+<!doctype html>
+<html>
+<head>
+    <title>Mark Roll</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.1.5/js/iziToast.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.1.5/css/iziToast.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+
+    <!-- Scripts -->
+    <script src="/scripts/belts.js"></script>
+    <script src="/scripts/permissions.js"></script>
+    <script src="/scripts/backend.js"></script>
+    <script src="/scripts/toolbar.js"></script>
+    <script>
+let STATE = {
+    date: null,
+    classID: null,
+    students: null
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Mount the toolbar.
+    TOOLBAR.mount(document.getElementById('toolbar'));
+    
+    let params = new URLSearchParams(location.search);
+    STATE.classID = parseInt(params.get('id'));
+    STATE.date = params.get('date');
+
+    if (!STATE.date) {
+        STATE.date = yyyymmdd(new Date());
+    } else if (!STATE.date.match(/^\d\d\d\d-\d\d-\d\d$/)) {
+        warn('Invalid date provided; marking roll for today.');
+        STATE.date = yyyymmdd(new Date());
+    }
+
+    if (isNaN(STATE.classID)) {
+        terminate('No class was specified in the URL.');
+        return;
+    }
+
+    let attendance = null;
+    let students   = BACKEND.get(`/classes/${STATE.classID}/students`);
+
+    BACKEND.get(`/attendance?date=${STATE.date}&class=${STATE.classID}`)
+            .then(res => res.json())
+            .then(json => attendance = json)
+            .catch(() => attendance = [])
+        .then(() => students)
+            .then(res => res.json())
+            .then(students => ready(students, attendance))
+            .catch(err => terminate('An unknown error occurred.'));
+});
+
+function yyyymmdd(date) {
+    var mm = date.getMonth() + 1;
+    var dd = date.getDate();
+
+    return [
+        date.getFullYear(),
+        '-',
+        (mm > 9 ? '' : '0') + mm,
+        '-',
+        (dd > 9 ? '' : '0') + dd
+    ].join('');
+}
+
+function ready(students, attendance) {
+    let tbody = document.getElementById('attendance');
+    let dateInput = document.getElementById('date-input');
+
+    STATE.students = [];
+    dateInput.value = STATE.date;
+
+    students.forEach(student => {
+        let name = student.name;
+        let entry = attendance.find(x => x.student === student.id);
+        let present;
+        let late;
+
+        if (typeof entry === 'undefined') {
+            present = false;
+            late = false;
+        } else {
+            present = true;
+            late = entry.late;
+        }
+
+        // Each row has its own state.
+
+        let state = {
+            id: student.id,
+            late: late,
+            present: present
+        };
+
+        STATE.students.push(state);
+
+        // Populate the table.
+
+        let row = document.createElement('tr');
+
+        let namecel = document.createElement('td');
+        let presentcel = document.createElement('td');
+        let latecel = document.createElement('td');
+
+        namecel.textContent = name;
+
+        let presentbox = document.createElement('input');
+        presentbox.type = 'checkbox';
+        presentbox.checked = present;
+        presentcel.appendChild(presentbox);
+
+        let latebox = document.createElement('input');
+        latebox.type = 'checkbox';
+        latebox.checked = late;
+        latebox.disabled = !present;
+        latecel.appendChild(latebox);
+
+        row.appendChild(namecel);
+        row.appendChild(presentcel);
+        row.appendChild(latecel);
+
+        tbody.appendChild(row);
+
+        // Attach the event listeners.
+
+        presentbox.addEventListener('change', () => {
+            let checked = presentbox.checked;
+            state.present = checked;
+            latebox.disabled = !checked;
+            if (!checked) {
+                state.late = false;
+                latebox.checked = false;
+            }
+        });
+
+        latebox.addEventListener('change', () => {
+            state.late = latebox.checked;
+        });
+    });
+
+    // Ready!
+
+    document.getElementById('loading').remove();
+    document.getElementById('main').style.display = '';
+}
+
+function save() {
+    let data = STATE.students
+        .filter(x => x.present)
+        .map(student => ({
+            class: STATE.classID,
+            date: STATE.date,
+            student: student.id,
+            late: student.late
+        }));
+
+    BACKEND.delete(`/attendance?date=${STATE.date}&class=${STATE.classID}`)
+        .then(() => BACKEND.post('/attendance', data))
+        .then(res => {
+            if (res.ok) {
+                succ('Saved!');
+            } else {
+                err(`Could not save: ${res.statusText}.`);
+            }
+        })
+        .catch(() => err('Could not save: unknown error.'));
+}
+
+function changeDate(ev) {
+    ev.preventDefault();
+
+    let date = document.getElementById('date-input').value;
+    if (!date.match(/^\d\d\d\d-\d\d-\d\d$/)) {
+        err('The date must be YYYY-MM-DD.');
+        return;
+    }
+
+    location.href = `?id=${STATE.classID}&date=${date}`;
+}
+
+function terminate(err) {
+    document.getElementById('loading').remove();
+    document.getElementById('main').remove();
+
+    let el = document.createElement('span');
+    el.textContent = err;
+    document.body.appendChild(el);
+}
+
+function err(error) {
+    iziToast.error({ message: error });
+}
+
+function succ(msg) {
+    iziToast.success({ message: msg });
+}
+
+function warn(msg) {
+    iziToast.warning({ message: msg });
+}
+    </script>
+</head>
+<body>
+    <header id="toolbar"></header>
+    <span id="loading">Loading…</span>
+    <main id="main" style="display: none;">
+        <input id="date-input"
+               type="date"
+               placeholder="YYYY-MM-DD"
+               onkeyup="if (event.keyCode === 13) changeDate(event);">
+        <table>
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Present</th>
+                    <th>Late</th>
+                </tr>
+            </thead>
+            <tbody id="attendance"></tbody>
+        </table>
+        <button type="button" onclick="save(event);">Save</button>
+    </main>
+</body>
+</html>

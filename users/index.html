@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+<head>
+    <title>Users</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/users.css">
+
+    <!-- Scripts -->
+    <script src="/scripts/belts.js"></script>
+    <script src="/scripts/permissions.js"></script>
+    <script src="/scripts/backend.js"></script>
+    <script src="/scripts/toolbar.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Mount the toolbar.
+    TOOLBAR.mount(document.getElementById('toolbar'));
+
+    let params = new URLSearchParams(location.search);
+    let query = params.get('query') || '';
+    let page = parseInt(params.get('page'));
+    if (isNaN(page) || page < 1) {
+        page = 1;
+    }
+
+    if (BACKEND.can(PERMISSIONS.CREATE_USERS)) {
+        document.getElementById('create-btn').style.display = '';
+    }
+
+    let next = `?query=${encodeURIComponent(query)}&page=${page + 1}`;
+    let prev = `?query=${encodeURIComponent(query)}&page=${page - 1}`;
+
+    document.getElementById('query').value = query;
+    document.getElementById('page').textContent = page;
+    document.getElementById('next').href = next;
+
+    if (page > 1) {
+        let prevBtn = document.getElementById('prev');
+        prevBtn.href = prev;
+        prevBtn.style.display = '';
+    }
+    
+    BACKEND.get(`/users?query=${encodeURIComponent(query)}&page=${page - 1}`)
+        .then(res => {
+            if (res.ok) {
+                return res.json()
+                    .then(users => {
+                        if (users.length === 0) {
+                            showError(page === 1
+                                ? 'No results.'
+                                : 'No more results.');
+                            return;
+                        }
+
+                        showUsers(users);
+                    });
+            } else {
+                showError(res.status === 401
+                    ? 'You are not sufficiently privileged.'
+                    : 'An unknown error ocurred.');
+            }
+        })
+        .catch(e => showError('An unknown error ocurred.'));
+});
+
+function showError(message) {
+    let main = document.getElementById('main');
+    let el = document.createElement('span');
+    el.textContent = message;
+
+    while (main.firstChild) {
+        main.removeChild(main.firstChild);
+    }
+
+    main.appendChild(el);
+}
+
+function showUsers(users) {
+    let main = document.getElementById('main');
+    let ol = document.createElement('ol');
+    ol.id = 'results';
+
+    users.forEach(user => {
+        let li = document.createElement('li');
+        let a = document.createElement('a');
+        a.href = `/users/view?id=${user.id}`;
+        a.textContent = user.name;
+        li.appendChild(a);
+        ol.appendChild(li);
+    });
+
+    while (main.firstChild) {
+        main.removeChild(main.firstChild);
+    }
+
+    main.appendChild(ol);
+}
+    </script>
+</head>
+<body>
+    <header id="toolbar"></header>
+    <form method="get" action="">
+        <input id="query" name="query" type="text" placeholder="Name">
+        <button type="submit">Search</button>
+    </form>
+    <section id="main">
+        <span>Loading…</span>
+    </section>
+    <section>
+        <a id="prev" style="display: none;">Previous</a>
+        Page <span id="page">1</span>
+        <a id="next">Next</a>
+    </section>
+    <a id="create-btn" href="/users/create" style="display: none;">New</a>
+</body>
+</html>

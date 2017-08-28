@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+<head>
+    <title>Edit Class</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.1.5/js/iziToast.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.1.5/css/iziToast.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+
+    <!-- Scripts -->
+    <script src="/scripts/belts.js"></script>
+    <script src="/scripts/permissions.js"></script>
+    <script src="/scripts/backend.js"></script>
+    <script src="/scripts/toolbar.js"></script>
+    <script>
+let id = parseInt(new URLSearchParams(location.search).get('id'));
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Mount the toolbar.
+    TOOLBAR.mount(document.getElementById('toolbar'));
+    
+    if (BACKEND.can(PERMISSIONS.DELETE_CLASSES)) {
+        let btn = document.getElementById('delete-btn');
+        btn.style.display = '';
+        btn.addEventListener('click', () => {
+            if (isNaN(id)) {
+                showError('Invalid user ID.');
+                return;
+            }
+
+            if (confirm('Are you sure?')) {
+                deleteClass(id);
+            }
+        })
+    }
+});
+
+function submittify(e) {
+    e.preventDefault();
+
+    if (isNaN(id)) {
+        showError('Invalid user ID.');
+        return;
+    }
+
+    let loc = document.getElementById('location').value;
+    let instructor = document.getElementById('instructor').value;
+    let name = document.getElementById('name').value;
+    let notes = document.getElementById('notes').value;
+
+    instructor = instructor === '' ? null : parseInt(instructor);
+    name = name === '' ? null : name;
+    notes = notes === '' ? null : notes;
+    
+    let submitBtn = document.getElementById('submit-btn');
+    submitBtn.disabled = true;
+
+    let geocoding = loc === ''
+        ? Promise.resolve([null, null])
+        : geocode(loc);
+
+    geocoding
+        .catch(() => {
+            showError('Could not convert location into coordinates.');
+            return;
+        })
+        .then(latlon => {
+            if (latlon) {
+                let lat = latlon[0];
+                let long = latlon[1];
+
+                let data = {
+                    name: name,
+                    notes: notes,
+                    lat: lat,
+                    long: long,
+                    instructor: instructor
+                };
+
+                return update(id, data);
+            }
+        })
+        .catch(e => {
+            console.error(e);
+            showError('An unknown error occurred.');
+        })
+        .then(() => {
+            submitBtn.disabled = false;
+        });
+}
+
+function update(id, data) {
+    return BACKEND.post(`/classes/${id}`, data)
+        .then(res => {
+            if (res.ok) {
+                location.href = `/classes/view?id=${id}`;
+            } else {
+                switch (res.status) {
+                    case 401:
+                        showError('You do not have permission to do that.');
+                        break;
+                    case 422:
+                        showError('Outdated form; please refresh.');
+                        break;
+                    default:
+                        showError('An unknown error occurred.');
+                }
+            }
+        });
+}
+
+function deleteClass(id) {
+    return BACKEND.delete(`/classes/${id}`)
+        .then(res => {
+            if (res.ok) {
+                location.href = '/classes';
+            } else {
+                switch (res.status) {
+                    case 401:
+                        showError('You do not have permission to do that.');
+                        break;
+                    default:
+                        showError('An unknown error occurred.');
+                }
+            }
+        })
+        .catch(() => {
+            showError('An unknown error occurred.');
+        });
+}
+
+function showError(error) {
+    iziToast.error({ title: 'Error', message: error });
+}
+
+function geocode(place) {
+    let url = 'https://nominatim.openstreetmap.org/search/';
+    url += encodeURIComponent(place);
+    url += '?format=json&limit=1';
+    return fetch(url)
+        .then(res => res.json())
+        .then(x => [parseFloat(x[0].lat), parseFloat(x[0].lon)]);
+}
+    </script>
+</head>
+<body>
+    <header id="toolbar"></header>
+    <form onsubmit="submittify(event);">
+        <label>
+            Name <input id="name" type="text"
+                placeholder="(Unchanged)">
+        </label>
+        <label>
+            Notes <textarea id="notes"
+                placeholder="(Unchanged)"></textarea>
+        </label>
+        <label>
+            Instructor ID <input id="instructor" type="text"
+                placeholder="(Unchanged)">
+        </label>
+        <label>
+            Location <input id="location" type="text"
+                placeholder="(Unchanged)">
+        </label>
+        <div>
+            <button id="delete-btn" type="button" style="display: none;">
+                Delete
+            </button>
+            <button id="submit-btn" type="submit">Update</button>
+        </div>
+    </form>
+</body>
+</html>

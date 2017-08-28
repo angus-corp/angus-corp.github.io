@@ -1,0 +1,93 @@
+button {
+    background-color: #FFFFFF;
+    border: 0;
+    border-radius: 4px;
+    padding: 4px 8px;
+}
+
+button:active {
+    background-color: #CCCCCC;
+    color: initial;
+}
+
+input[type=text], input[type=number] {
+    padding: 4px;
+    font-size: inherit;
+}
+
+input[type=text] {
+    width: 256px;
+}
+
+input[type=number] {
+    width: 128px;
+}
+
+body {
+    display: flex;
+    margin: 0;
+    font-family: 'Roboto Mono', monospace;
+    color: #FFFFFF;
+    background-color: #00FF00;
+}
+
+.actionpad {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.actionpad button {
+    width: 50vh;
+    max-width: 25vw;
+    height: 50vh;
+    font-size: 25vh;
+    color: #FFFFFF;
+    box-sizing: border-box;
+    border: 2px solid #000000;
+    border-radius: 0;
+    margin: 0;
+    transition: border-width 0.1s;
+}
+
+.actionpad button:active {
+    border-width: 8px;
+}
+
+.actionpad button:focus {
+    border-color: #FFFFFF;
+    outline: none;
+}
+
+.red.actionpad button {
+    background-color: #990000;
+}
+
+.blue.actionpad button {
+    background-color: #0066CC;
+}
+
+.config-container {
+    overflow: auto;
+    height: 100vh;
+    flex-grow: 1;
+    background-color: #000000;
+}
+
+.config {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.config label {
+    margin-bottom: 8px;
+}
+
+.config button {
+    margin-bottom: 8px;
+    font: inherit;
+    padding: 16px;
+}

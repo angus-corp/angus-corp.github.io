@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+    <title>View User</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+
+    <!-- Scripts -->
+    <script src="/scripts/belts.js"></script>
+    <script src="/scripts/permissions.js"></script>
+    <script src="/scripts/backend.js"></script>
+    <script src="/scripts/toolbar.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Mount the toolbar.
+    TOOLBAR.mount(document.getElementById('toolbar'));
+
+    // Add the edit button's `href`.
+    let id = parseInt(new URLSearchParams(location.search).get('id'));
+    document.getElementById('edit-btn').href = `/users/edit?id=${id}`;
+
+    // Load the user's data.
+    BACKEND.get(`/users/${id}`)
+        .then(res => {
+            if (res.ok) {
+                return res.json().then(user => showUser(user));
+            } else if (res.status === 404) {
+                showError('There is no user with the requested ID.');
+            } else {
+                showError('An unknown error occurred.');
+            }
+        })
+        .catch(e => {
+            console.error(e);
+            showError('An unknown error ocurred.');
+        });
+});
+
+function showError(message) {
+    let main = document.getElementById('main');
+    let el = document.createElement('span');
+    el.textContent = message;
+
+    while (main.firstChild) {
+        main.removeChild(main.firstChild);
+    }
+
+    main.appendChild(el);
+}
+
+function showUser(user) {
+    let main = document.getElementById('main');
+
+    while (main.firstChild) {
+        main.removeChild(main.firstChild);
+    }
+
+    let name = document.createElement('h1');
+    name.textContent = typeof user.name === 'string'
+        ? user.name
+        : 'Unknown User';
+    main.appendChild(name);
+
+    let desc = document.createElement('dl');
+
+    if (typeof user.email === 'string') {
+        let def = makeDefinition('Email', document.createTextNode(user.email));
+        desc.appendChild(def);
+    }
+
+    if (typeof user.birthday === 'string') {
+        let date = new Date(user.birthday).toLocaleDateString();
+        let def = makeDefinition('Birthday', document.createTextNode(date));
+        desc.appendChild(def);
+    }
+
+    if (typeof user.belt === 'number') {
+        let name = BELTS.name(user.belt);
+        let def = makeDefinition('Belt', document.createTextNode(name));
+        desc.appendChild(def);
+    }
+
+    if (typeof user.learning === 'boolean') {
+        if (user.learning) {
+            BACKEND.get(`/classes/${user.class}`)
+                .then(res => res.json())
+                .then(clas => {
+                    if (clas.name) {
+                        let name = document.createElement('a');
+                        name.textContent = clas.name;
+                        name.href = `/classes/view?id=${user.class}`;
+                        desc.appendChild(makeDefinition('Class', name));
+                    }
+                });
+        } else {
+            let name = document.createTextNode('None');
+            desc.appendChild(makeDefinition('Class', name));
+        }
+    }
+
+    main.appendChild(desc);
+}
+
+function makeDefinition(term, desc) {
+    let dt = document.createElement('dt');
+    let dd = document.createElement('dd');
+    let div = document.createElement('div');
+    dt.appendChild(document.createTextNode(term));
+    dd.appendChild(desc);
+    div.appendChild(dt);
+    div.appendChild(dd);
+    return div;
+}
+    </script>
+</head>
+<body>
+    <header id="toolbar"></header>
+    <section id="main">
+        <span>Loading…</span>
+    </section>
+    <section>
+        <a id="edit-btn">Edit</a>
+    </section>
+</body>
+</html>

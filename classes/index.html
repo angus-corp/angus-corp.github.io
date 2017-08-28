@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+    <title>Classes</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    <!-- Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.6/marked.min.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/classes.css">
+
+    <!-- Scripts -->
+    <script src="/scripts/belts.js"></script>
+    <script src="/scripts/permissions.js"></script>
+    <script src="/scripts/backend.js"></script>
+    <script src="/scripts/toolbar.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Mount the toolbar.
+    TOOLBAR.mount(document.getElementById('toolbar'));
+    
+    if (BACKEND.can(PERMISSIONS.CREATE_CLASSES)) {
+        document.getElementById('create-btn').style.display = '';
+    }
+
+    BACKEND.get('/classes')
+        .then(res => res.json())
+        .then(classes => {
+            if (classes.length == 0) {
+                showError('There are currently no classes.');
+            } else {
+                showClasses(classes);
+            }
+        })
+        .catch(e => {
+            console.error(e);
+            showError('An unknown error ocurred.');
+        });
+});
+
+function showError(message) {
+    let main = document.getElementById('main');
+    let el = document.createElement('span');
+    el.textContent = message;
+    // Remove loading text.
+    while (main.firstChild) {
+        main.removeChild(main.firstChild);
+    }
+    // Add error text.
+    main.appendChild(el);
+}
+
+function showClasses(classes) {
+    let main = document.getElementById('main');
+    let ul = document.createElement('ul');
+    ul.id = 'classes';
+
+    classes.forEach(clas => {
+        let li = document.createElement('li');
+        let header = document.createElement('h1');
+        let anchor = document.createElement('a');
+        let desc = document.createElement('div');
+
+        anchor.textContent = clas.name;
+        anchor.href = `/classes/view?id=${clas.id}`;
+        header.appendChild(anchor);
+        desc.innerHTML = marked(clas.notes);
+
+        li.appendChild(header);
+        li.appendChild(desc);
+        ul.appendChild(li);
+    });
+
+    // Remove loading text.
+    while (main.firstChild) {
+        main.removeChild(main.firstChild);
+    }
+
+    // Add classes.
+    main.appendChild(ul);
+}
+    </script>
+</head>
+<body>
+    <header id="toolbar"></header>
+    <section id="main">
+        <span>Loading…</span>
+    </section>
+    <section>
+        <a id="create-btn" href="/classes/create" style="display: none;">New</a>
+    </section>
+</body>
+</html>

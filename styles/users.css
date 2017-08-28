@@ -1,0 +1,13 @@
+#main {
+    margin: 8px 0;
+}
+
+#results {
+    list-style: none;
+    padding: 0;
+}
+
+#results > li {
+    padding: 8px 0;
+    font-size: 1.2em;
+}
