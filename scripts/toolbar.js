@@ -16,7 +16,7 @@ window.TOOLBAR = {
         el.appendChild(a('Classes', '/classes'));
         el.appendChild(a('Match', '/matches'));
 
-        if (BACKEND.can(PERMISSIONS.READ_NAMES)) {
+        if (BACKEND.can(PERMISSIONS.READ_DETAILS)) {
             el.appendChild('Users', '/users');
         }
 
