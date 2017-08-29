@@ -17,8 +17,7 @@ try {
 }
 
 return {
-    //TODO: url: 'https://salty-pasta.herokuapp.com',
-    url: 'http://localhost:8000',
+    url: 'https://salty-pasta.herokuapp.com',
 
     token: token,
     tokenString: tokenString,
