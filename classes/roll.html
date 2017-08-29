@@ -11,6 +11,7 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/classes.css">
 
     <!-- Scripts -->
     <script src="/scripts/belts.js"></script>
@@ -77,7 +78,9 @@ function ready(students, attendance) {
     STATE.students = [];
     dateInput.value = STATE.date;
 
-    students.forEach(student => {
+    students
+    .sort((a, b) => (a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0))
+    .forEach(student => {
         let name = student.name;
         let entry = attendance.find(x => x.student === student.id);
         let present;
@@ -128,16 +131,22 @@ function ready(students, attendance) {
 
         tbody.appendChild(row);
 
-        // Attach the event listeners.
+        // Presence hook.
 
-        presentbox.addEventListener('change', () => {
-            let checked = presentbox.checked;
+        state.setPresent = function (checked) {
+            presentbox.checked = checked;
             state.present = checked;
             latebox.disabled = !checked;
             if (!checked) {
                 state.late = false;
                 latebox.checked = false;
             }
+        };
+
+        // Attach the event listeners.
+
+        presentbox.addEventListener('change', () => {
+            state.setPresent(presentbox.checked);
         });
 
         latebox.addEventListener('change', () => {
@@ -171,6 +180,11 @@ function save() {
             }
         })
         .catch(() => err('Could not save: unknown error.'));
+}
+
+function toggle() {
+    let targetState = !STATE.students.every(x => x.present);
+    STATE.students.forEach(student => student.setPresent(targetState));
 }
 
 function changeDate(ev) {
@@ -214,6 +228,7 @@ function warn(msg) {
         <input id="date-input"
                type="date"
                placeholder="YYYY-MM-DD"
+               onchange="changeDate(event);"
                onkeyup="if (event.keyCode === 13) changeDate(event);">
         <table>
             <thead>
@@ -225,7 +240,10 @@ function warn(msg) {
             </thead>
             <tbody id="attendance"></tbody>
         </table>
-        <button type="button" onclick="save(event);">Save</button>
+        <footer id="roll-footer">
+            <button type="button" onclick="save(event);">Save</button>
+            <button type="button" onclick="toggle(event);">Toggle All</button>
+        </footer>
     </main>
 </body>
 </html>

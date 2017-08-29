@@ -12,6 +12,7 @@ html, body {
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
+    margin-bottom: 16px;
 }
 
 body > :not(#toolbar) {
@@ -58,8 +59,12 @@ button {
     font-size: 0.9em;
 }
 
-button:active {
+button:enabled:active {
     background-color: #EEEEEE;
+}
+
+button:disabled {
+    color: #888888;
 }
 
 button {
@@ -85,6 +90,10 @@ button {
 #toolbar > a {
     color: #FFFFFF;
     margin: 8px;
+}
+
+#toolbar > a.current {
+    color: #00CCFF;
 }
 
 #toolbar > a:active {
