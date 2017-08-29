@@ -20,22 +20,6 @@
     <script src="/scripts/backend.js"></script>
     <script src="/scripts/toolbar.js"></script>
     <script>
-let showingEditLink = false;
-function showEditLink(id) {
-    let link = document.getElementById('edit-link');
-    link.href  = `/classes/edit?id=${id}`;
-    link.style.display = '';
-    showingEditLink = true;
-}
-
-let showingRollLink = false;
-function showRollLink(id) {
-    let link = document.getElementById('roll-link');
-    link.href = `/classes/roll?id=${id}`;
-    link.style.display = '';
-    showingRollLink = true;
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     // Mount the toolbar.
     TOOLBAR.mount(document.getElementById('toolbar'));
@@ -45,30 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
         id = 1;
     }
 
-    if (!showingEditLink && BACKEND.can(PERMISSIONS.EDIT_CLASSES)) {
-        showEditLink(id);
-    }
-
-    if (!showingRollLink && BACKEND.can(PERMISSIONS.ATTENDANCE)) {
-        showRollLink(id);
-    }
-
     BACKEND.get(`/classes/${id}`)
         .then(res => {
             if (res.ok) {
-                return res.json().then(clas => {
-                    if (!showingEditLink
-                    && BACKEND.can(PERMISSIONS.EDIT_OWN_CLASSES)
-                    && BACKEND.is(clas.instructor)) {
-                        showEditLink(id);
-                    }
-
-                    if (!showingRollLink && BACKEND.is(clas.instructor)) {
-                        showRollLink(id);
-                    }
-
-                    return showClass(clas);
-                });
+                return res.json().then(clas => showClass(id, clas));
             } else if (res.status === 404) {
                 showError('There is no class with the requested ID.');
             } else {
@@ -93,7 +57,7 @@ function showError(message) {
     main.appendChild(el);
 }
 
-function showClass(clas) {
+function showClass(id, clas) {
     let main = document.getElementById('main');
 
     // Remove loading text.
@@ -105,6 +69,34 @@ function showClass(clas) {
     let name = document.createElement('h1');
     name.textContent = clas.name;
     main.appendChild(name);
+
+    // Add links.
+    let links = [];
+
+    if (BACKEND.can(PERMISSIONS.ATTENDANCE) || BACKEND.is(clas.instructor)) {
+        let link = document.createElement('a');
+        link.href  = `/classes/roll?id=${id}`;
+        link.textContent = 'Mark Roll';
+        links.push(link);
+    }
+
+    if (BACKEND.can(PERMISSIONS.EDIT_CLASSES) ||
+        (
+            BACKEND.can(PERMISSIONS.EDIT_OWN_CLASSES)
+            && BACKEND.is(clas.instructor)
+        ))
+    {
+        if (links.length > 0) {
+            links.push(document.createTextNode(' / '));
+        }
+
+        let link = document.createElement('a');
+        link.href  = `/classes/edit?id=${id}`;
+        link.textContent = 'Edit Class';
+        links.push(link);
+    }
+
+    main.appendChild(div(links));
 
     // Add instructor.
     let instrEl = document.createElement('p');
@@ -173,16 +165,20 @@ function showClass(clas) {
         });
     }
 }
+
+function div(children) {
+    let div = document.createElement('p');
+    children.forEach(child => {
+        div.appendChild(child);
+    });
+    return div;
+}
     </script>
 </head>
 <body>
     <header id="toolbar"></header>
     <section id="main">
         <span>Loading…</span>
-    </section>
-    <section>
-        <a id="edit-link" style="display: none;">Edit</a>
-        <a id="roll-link" style="display: none;">Roll</a>
     </section>
 </body>
 </html>

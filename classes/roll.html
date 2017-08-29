@@ -141,6 +141,7 @@ function ready(students, attendance) {
                 state.late = false;
                 latebox.checked = false;
             }
+            updatePresences();
         };
 
         // Attach the event listeners.
@@ -156,6 +157,7 @@ function ready(students, attendance) {
 
     // Ready!
 
+    updatePresences();
     document.getElementById('loading').remove();
     document.getElementById('main').style.display = '';
 }
@@ -185,6 +187,17 @@ function save() {
 function toggle() {
     let targetState = !STATE.students.every(x => x.present);
     STATE.students.forEach(student => student.setPresent(targetState));
+}
+
+function updatePresences() {
+    let infothing = document.getElementById('infothing');
+    if (STATE.students) {
+        let total = STATE.students.length;
+        let present = STATE.students.filter(x => x.present).length;
+        infothing.textContent = `${present}/${total} Present`;
+    } else {
+        infothing.textContent = '';
+    }
 }
 
 function changeDate(ev) {
@@ -243,6 +256,7 @@ function warn(msg) {
         <footer id="roll-footer">
             <button type="button" onclick="save(event);">Save</button>
             <button type="button" onclick="toggle(event);">Toggle All</button>
+            <small id="infothing">69/69 Present</small>
         </footer>
     </main>
 </body>

@@ -18,15 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mount the toolbar.
     TOOLBAR.mount(document.getElementById('toolbar'));
 
-    // Add the edit button's `href`.
+    // Add the edit button.
     let id = parseInt(new URLSearchParams(location.search).get('id'));
-    document.getElementById('edit-btn').href = `/users/edit?id=${id}`;
 
     // Load the user's data.
     BACKEND.get(`/users/${id}`)
         .then(res => {
             if (res.ok) {
-                return res.json().then(user => showUser(user));
+                return res.json().then(user => showUser(id, user));
             } else if (res.status === 404) {
                 showError('There is no user with the requested ID.');
             } else {
@@ -51,7 +50,7 @@ function showError(message) {
     main.appendChild(el);
 }
 
-function showUser(user) {
+function showUser(id, user) {
     let main = document.getElementById('main');
 
     while (main.firstChild) {
@@ -63,6 +62,11 @@ function showUser(user) {
         ? user.name
         : 'Unknown User';
     main.appendChild(name);
+
+    let edit = document.createElement('a');
+    edit.href = `/users/edit?id=${id}`;
+    edit.textContent = 'Edit User';
+    main.appendChild(edit);
 
     let desc = document.createElement('dl');
 
@@ -120,9 +124,6 @@ function makeDefinition(term, desc) {
     <header id="toolbar"></header>
     <section id="main">
         <span>Loading…</span>
-    </section>
-    <section>
-        <a id="edit-btn">Edit</a>
     </section>
 </body>
 </html>
