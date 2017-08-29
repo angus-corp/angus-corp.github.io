@@ -84,9 +84,12 @@ function init(config) {
     votes = null; // Non-null if and only if state.mode === PLAYING.
     scoreboard = null;
     secondTicker = null;
-    $('round-inp').max = config.numRounds + 1;
+
     setState(state);
+    $('round-inp').max = config.numRounds + 1;
+    $('pause-btn').textContent = 'Start';
     resetSecondTicker();
+
     heyListen();
 
     window.open('../scoreboard', 'scoreboard');
@@ -214,7 +217,7 @@ window.addEventListener('keydown', function (e) {
 // SET STATE - THE HEART OF THE RENDERER (I HAVE NO IDEA WHAT I'M DOING)
 
 var PAUSE_TEXT = 'Pause';
-var PLAY_TEXT = 'Play';
+var PLAY_TEXT = 'Resume';
 
 function setState(newState) {
     var edits = {};
@@ -428,7 +431,10 @@ function heyListen() {
     });
 
     $('end-btn').addEventListener('click', function () {
-        end();
+        let msg = 'Are you sure you want to end this match? \nThis cannot be undone.';
+        if (confirm(msg)) {
+            end();
+        }
     });
 
     $('round-inp').addEventListener('change', function () {
