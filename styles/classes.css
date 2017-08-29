@@ -29,6 +29,11 @@ h1 {
     border: 1px solid #AAAAAA;
 }
 
+#roll-table {
+    /* Space for the footer. */
+    margin-bottom: 64px;
+}
+
 #roll-footer {
     position: fixed;
     bottom: 0;
