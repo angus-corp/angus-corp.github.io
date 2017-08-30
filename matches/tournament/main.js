@@ -1,5 +1,3 @@
-// TODO(easy): Download tournament as a CSV.
-
 class Main extends React.Component {
     constructor(props) {
         super(props);
@@ -11,6 +9,7 @@ class Main extends React.Component {
             judgementSpan: 600,
             roundDuration: 90,
             breakDuration: 60,
+            firstMatchID: 0,
 
             roundSound: 'buzzer.mp3',
 
@@ -27,12 +26,14 @@ class Main extends React.Component {
                 roundDuration: this.state.roundDuration,
                 breakDuration: this.state.breakDuration,
                 players:       this.state.players,
+                firstMatchID: this.state.firstMatchID,
                 onNumRounds:     x => this.setState({ numRounds: x }),
                 onMajority:      x => this.setState({ majority: x }),
                 onJudgementSpan: x => this.setState({ judgementSpan: x }),
                 onRoundDuration: x => this.setState({ roundDuration: x }),
                 onRoundSound:    x => this.setState({ roundSound: x }),
                 onBreakDuration: x => this.setState({ breakDuration: x }),
+                onFirstMatchID: x => this.setState({ firstMatchID: x }),
                 onPlayers:       x => this.setState({ players: x }),
                 onSubmit: () => this.setState({ configuring: false })
             });
@@ -45,7 +46,8 @@ class Main extends React.Component {
             majority:      this.state.majority,
             judgementSpan: this.state.judgementSpan,
             roundDuration: this.state.roundDuration,
-            breakDuration: this.state.breakDuration
+            breakDuration: this.state.breakDuration,
+            firstMatchID: this.state.firstMatchID
         });
     }
 }

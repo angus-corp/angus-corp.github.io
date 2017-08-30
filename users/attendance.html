@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+<head>
+    <title>View Attendance</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/styles/main.css">
+    <link rel="stylesheet" href="/styles/attendance.css">
+
+    <!-- Scripts -->
+    <script src="/scripts/belts.js"></script>
+    <script src="/scripts/permissions.js"></script>
+    <script src="/scripts/backend.js"></script>
+    <script src="/scripts/toolbar.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Mount the toolbar.
+    TOOLBAR.mount(document.getElementById('toolbar'));
+
+    // Load query parameters.
+    let params = new URLSearchParams(location.search);
+    let id = parseInt(params.get('id'));
+    let main = document.getElementById('main');
+    let msg = document.getElementById('msg');
+
+    // Load the attendance data.
+    Promise.all([
+        BACKEND.get(`/users/${id}`).then(res => res.json()),
+        BACKEND.get(`/attendance?student=${id}`).then(res => res.json())
+    ]).then(results => {
+        let user = results[0];
+        let attendance = results[1];
+        
+        msg.remove();
+
+        let title = `Attendance for ${user.name || 'Unknown User'}`;
+        document.getElementById('page-title').textContent = title;
+
+        startCalendar(attendance, document.getElementById('calendar'));
+    })
+    .catch(e => {
+        console.error(e);
+        msg.textContent = 'An unknown error ocurred.';
+    });
+});
+
+function startCalendar(att, cal) {
+    let map = {};
+    let cells = [];
+
+    att.map(att => att.date)
+        .forEach((date, i) => {
+            map[date] = att[i].late ? 'LATE' : 'PRESENT';
+        });
+
+    for (let i = 0; i < 42; i++) {
+        cells.push(document.createElement('td'));
+    }
+
+    let now = new Date();
+    let month = now.getMonth(); // [0, 11]
+    let year = now.getFullYear();
+
+    let header = document.createElement('header');
+    let desc = document.createElement('span');
+
+    let prev = document.createElement('button');
+    prev.textContent = '◀';
+    prev.onclick = () => {
+        if (month === 0) {
+            month = 11;
+            year -= 1;
+        } else {
+            month -= 1;
+        }
+
+        showMonth(map, month, year, desc, cells);
+    };
+
+    header.appendChild(prev);
+    header.appendChild(desc);
+
+    let next = document.createElement('button');
+    next.textContent = '▶';
+    next.onclick = () => {
+        if (month === 11) {
+            month = 0;
+            year += 1;
+        } else {
+            month += 1;
+        }
+
+        showMonth(map, month, year, desc, cells);
+    };
+
+    header.appendChild(next);
+    cal.appendChild(header);
+
+    let table = document.createElement('table');
+    let thead = document.createElement('tr');
+
+    ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(letter => {
+        let cell = document.createElement('th');
+        cell.textContent = letter;
+        thead.appendChild(cell);
+    });
+
+    table.appendChild(thead);
+
+    for (let i = 0; i < 6; i++) {
+        let row = document.createElement('tr');
+
+        for (var j = 0; j < 7; j++) {
+            row.appendChild(cells[i*7 + j]);
+        }
+
+        table.appendChild(row);
+    }
+
+    cal.appendChild(table);
+    showMonth(map, month, year, desc, cells);
+}
+
+let MONTHS = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+function showMonth(att, month, year, header, cells) {
+    header.textContent = `${MONTHS[month]} ${year}`;
+
+    let first = new Date(year, month, 1);
+    let last = new Date(year, month + 1, 0);
+
+    let min = first.getDay(); // Inclusive.
+    let max = min + last.getDate(); // Exclusive.
+
+    for (let i = 0; i < 42; i++) {
+        let cell = cells[i];
+        if (max <= i || i < min) {
+            cell.textContent = '\xa0';
+            cell.className = '';
+            continue;
+        }
+
+        let date = i - min + 1;
+        let iso = `${year}-${twopad(month + 1)}-${twopad(date)}`;
+
+        if (att.hasOwnProperty(iso)) {
+            if (att[iso] === 'LATE') {
+                cell.className = 'late';
+            } else {
+                cell.className = 'present';
+            }
+        } else {
+            cell.className = '';
+        }
+
+        cell.textContent = date;
+    }
+
+    // TODO: LEGEND
+}
+
+function twopad(s) {
+    s = '' + s;
+    if (s.length === 0) {
+        return '00';
+    } else if (s.length === 1) {
+        return '0' + s;
+    } else {
+        return s;
+    }
+}
+    </script>
+</head>
+<body>
+    <header id="toolbar"></header>
+    <section id="main">
+        <span id="msg">Loading…</span>
+        <h1 id="page-title"></h1>
+        <section id="calendar"></section>
+    </section>
+    <ul class="legend">
+        <li>Color Legend</li>
+        <li><span class="late"></span> Late</li>
+        <li><span class="present"></span> Present</li>
+    </ul>
+</body>
+</html>

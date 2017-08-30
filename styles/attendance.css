@@ -1,0 +1,50 @@
+.present {
+    background-color: #77FF77;
+}
+
+.late {
+    background-color: #FFAA55;
+}
+
+h1 {
+    font-weight: 500;
+    margin: 0;
+    margin-bottom: 16px;
+}
+
+#main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+#calendar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+#calendar header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#calendar table {
+    margin: 0;
+}
+
+.legend {
+    list-style: none;
+    padding: 0;
+}
+
+.legend li {
+    margin: 4px;
+}
+
+.legend span {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+}

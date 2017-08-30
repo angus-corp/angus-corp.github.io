@@ -13,21 +13,38 @@ class TournamentForm extends React.Component {
             e('h1', null, 'Taekwondo Tournament Manager '),
             e('p', null, 'Click to start match, right-click to input scores.'),
 
-            e('label', null, 'Rounds',
+            e('label',
+                {
+                    className: 'hinted',
+                    title: 'The number of rounds in each match.'
+                },
+                'Rounds',
                 e('input', {
                     type: 'number',
                     required: true, min: 1,
                     value: props.numRounds,
                     onChange: e => props.onNumRounds(parseInt(e.target.value))
                 })),
-            e('label', null, 'Judge Threshold',
+
+            e('label',
+                {
+                    className: 'hinted',
+                    title: 'The number of judges that need to agree on a point for it to count.'
+                },
+                'Judge Threshold',
                 e('input', {
                     type: 'number',
                     required: true, min: 1, max: 4,
                     value: props.majority,
                     onChange: e => props.onMajority(parseInt(e.target.value))
                 })),
-            e('label', null, 'Judgement Span (Milliseconds)',
+
+            e('label',
+                {
+                    className: 'hinted',
+                    title: 'The maximum amount of time over which a judgement can be made.'
+                },
+                'Judgement Span (Milliseconds)',
                 e('input', {
                     type: 'number',
                     required: true, min: 0,
@@ -35,21 +52,51 @@ class TournamentForm extends React.Component {
                     onChange: e => props.onJudgementSpan(parseInt(e.target.value))
                 })),
 
-            e('label', null, 'Round Length (Seconds)',
+            e('label',
+                {
+                    className: 'hinted',
+                    title: 'The length of each round in a match.'
+                },
+                'Round Length (Seconds)',
                 e('input', {
                     type: 'number',
                     required: true, min: 0,
                     value: props.roundDuration,
                     onChange: e => props.onRoundDuration(parseInt(e.target.value))
                 })),
-            e('label', null, 'Break Length (Seconds)',
+
+            e('label',
+                {
+                    className: 'hinted',
+                    title: 'The allotted break time after each round.'
+                },
+                'Break Length (Seconds)',
                 e('input', {
                     type: 'number',
                     required: true, min: 0,
                     value: props.breakDuration,
                     onChange: e => props.onBreakDuration(parseInt(e.target.value))
                 })),
-            e('label', null, 'Custom Round Buzzer (Optional)',
+
+            e('label',
+                {
+                    className: 'hinted',
+                    title: 'The match ID of the first match. This will be the smallest match ID in the tournament.'
+                },
+                'First Match ID',
+                e('input', {
+                    type: 'number',
+                    required: true, min: 0,
+                    value: props.firstMatchID,
+                    onChange: e => props.onFirstMatchID(parseInt(e.target.value))
+                })),
+
+            e('label',
+                {
+                    className: 'hinted',
+                    title: 'The sound played at the end of each round.'
+                },
+                'Custom Round Buzzer (Optional)',
                 e('input', {
                     type: 'file',
                     accept: 'audio/*',
@@ -64,7 +111,7 @@ class TournamentForm extends React.Component {
                 })),
 
             e('textarea', {
-                placeholder: 'Players, each on a separate line.',
+                placeholder: 'Players, each on a separate line. \n\nIf the players are given in the same order, the bracket will be exactly the same.',
                 required: true,
 
                 onChange: e => {

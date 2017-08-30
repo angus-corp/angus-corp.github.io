@@ -38,6 +38,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
     }
+
+    // Prefill.
+    BACKEND.get(`/classes/${id}`)
+        .then(res => res.json())
+        .then(clas => {
+            let name = document.getElementById('name');
+            let notes = document.getElementById('notes');
+            let instructor = document.getElementById('instructor');
+
+            if (!name.value)
+                name.value = clas.name;
+            if (!notes.value)
+                notes.value = clas.notes;
+            if (!instructor.value)
+                instructor.value = clas.instructor;
+        });
 });
 
 function submittify(e) {
@@ -159,8 +175,10 @@ function geocode(place) {
                    autofocus>
         </label>
         <label>
-            Notes (<a href="https://www.markdownguide.org/basic-syntax">Formatting Guide</a>)
+            Notes (<a href="https://daringfireball.net/projects/markdown/basics" target="formatting-guide">Formatting Guide</a>)
             <textarea id="notes"
+                      rows="10"
+                      cols="50"
                       placeholder="(Unchanged)"></textarea>
         </label>
         <label>

@@ -52,9 +52,12 @@ body {
     bottom: 0;
     padding: 8px 4px;
     border-radius: 4px 4px 0 0;
+    box-sizing: border-box;
+    max-width: 100%;
 }
 
 .penalty {
+    flex-shrink: 1;
     margin: 0 4px;
     width: 3em;
     height: 1.5em;

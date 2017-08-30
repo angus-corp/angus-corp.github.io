@@ -47,12 +47,6 @@ function endBreak() {
     document.body.classList.remove('break');
 }
 
-function play(sound) {
-    if (sound !== null) {
-        new Audio(sound).play();
-    }
-}
-
 function setPenalties(side, penalties) {
     let elms = document.getElementById('penalties-' + side).children;
     for (var i = 0; i < elms.length; i++) {
@@ -74,7 +68,13 @@ function setPenalties(side, penalties) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    window.opener.postMessage('scoreboard.ready', '*');
+    if (window.opener) {
+        window.opener.postMessage('scoreboard.ready', '*');
+    }
+
+    if (window.parent) {
+        window.parent.postMessage('scoreboard.ready', '*');
+    }
 });
 
 function pad2(x) {

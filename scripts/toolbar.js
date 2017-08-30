@@ -15,6 +15,9 @@ window.TOOLBAR = {
             return x;
         };
 
+        let divider = cel('div');
+        divider.className = 'divider';
+
         let logo = a('AHRDA', '/');
         logo.className = 'logo';
         el.appendChild(logo);
@@ -26,15 +29,22 @@ window.TOOLBAR = {
         }
 
         el.appendChild(a('Match', '/matches'));
+        el.appendChild(divider);
 
         let id = BACKEND.id();
-
         if (id !== undefined) {
+            let profileLink = cel('a');
             let logout = a('Logout', '#');
+
+            profileLink.textContent = 'Profile';
+            profileLink.href = `/users/view?id=${id}`;
+
             logout.addEventListener('click', ev => {
                 ev.preventDefault();
                 BACKEND.logout();
             });
+
+            el.appendChild(profileLink);
             el.appendChild(logout);
         } else {
             el.appendChild(a(

@@ -63,10 +63,34 @@ function showUser(id, user) {
         : 'Unknown User';
     main.appendChild(name);
 
+    let links = document.createElement('p');
+    main.appendChild(links);
+
     let edit = document.createElement('a');
     edit.href = `/users/edit?id=${id}`;
     edit.textContent = 'Edit User';
-    main.appendChild(edit);
+    links.appendChild(edit);
+
+    let checkPermitted;
+    if (BACKEND.can(PERMISSIONS.ATTENDANCE)) {
+        checkPermitted = Promise.resolve(true);
+    } else if (user.learning) {
+        checkPermitted = getClass(user.class)
+            .then(clas => BACKEND.is(clas.instructor));
+    } else {
+        checkPermitted = Promise.resolve(false);
+    }
+
+    checkPermitted.then(isPermitted => {
+        if (isPermitted) {
+            links.appendChild(document.createTextNode(' / '))
+
+            let att = document.createElement('a');
+            att.href = `/users/attendance?id=${id}`;
+            att.textContent = 'View Attendance';
+            links.appendChild(att);
+        }
+    });
 
     let desc = document.createElement('dl');
 
@@ -89,8 +113,7 @@ function showUser(id, user) {
 
     if (typeof user.learning === 'boolean') {
         if (user.learning) {
-            BACKEND.get(`/classes/${user.class}`)
-                .then(res => res.json())
+            getClass(user.class)
                 .then(clas => {
                     if (clas.name) {
                         let name = document.createElement('a');
@@ -118,6 +141,26 @@ function makeDefinition(term, desc) {
     div.appendChild(dd);
     return div;
 }
+
+// Memoized classes.
+let getClass = (() => {
+    let classes = {};
+
+    return function (id) {
+        if (id in classes) {
+            return classes[id];
+        } else {
+            classes[id] = BACKEND.get(`/classes/${id}`)
+                .then(res => res.json())
+                .then(json => {
+                    classes[id] = json;
+                    return json;
+                });
+
+            return classes[id];
+        }
+    }
+})();
     </script>
 </head>
 <body>

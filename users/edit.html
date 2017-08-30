@@ -61,6 +61,28 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('loading').remove();
             document.getElementById('error').style.display = '';
         });
+
+    // Prefill.
+    BACKEND.get(`/users/${id}`)
+        .then(res => res.json())
+        .then(user => {
+            let name = document.getElementById('name');
+            let email = document.getElementById('email');
+            let birthday = document.getElementById('birthday');
+            let belt = document.getElementById('belt');
+            let clas = document.getElementById('class');
+
+            if (!name.value)
+                name.value = user.name;
+            if (!email.value)
+                email.value = user.email;
+            if (!birthday.value)
+                birthday.value = user.birthday;
+            if (belt.value === 'UNCHANGED')
+                belt.value = user.belt;
+            if (clas.value === 'UNCHANGED')
+                clas.value = user.learning ? user.class : 'NONE';
+        });
 });
 
 function submittify(e) {

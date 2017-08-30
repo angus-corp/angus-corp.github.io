@@ -19,16 +19,31 @@ main {
     height: 100%;
     border: 1px solid #FFAA55;
     padding: 4px;
-
     display: flex;
+    cursor: pointer;
+}
+
+.match-id {
+    padding: 2px;
+    color: #777777;
+}
+
+.competitors {
+    display: flex;
+    flex-shrink: 100;
+    overflow: hidden;
+    width: 100%;
     flex-direction: column;
     justify-content: space-around;
-    cursor: pointer;
 }
 
 .match-box.complete {
     border-color: #77FF77;
     cursor: default;
+}
+
+.match-box.complete .match-id {
+    display: none;
 }
 
 .match-box.unready {
@@ -37,7 +52,6 @@ main {
 }
 
 .match-entry {
-    width: 100%;
     display: flex;
     justify-content: space-between;
     padding: 0 4px;
@@ -152,6 +166,66 @@ button:active::before {
 }
 
 .bracket {
-	width: 100%;
-	height: 100%;
+    width: 100%;
+    height: 100%;
+}
+
+.hinted {
+    text-decoration-line: underline;
+    text-decoration-style: dashed;
+    text-decoration-color: #AAA;
+    cursor: help;
+}
+
+label.hinted input {    
+    text-decoration-line: none;
+}
+
+.legend {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    list-style: none;
+    padding: 8px;
+    margin: 0;
+}
+
+.legend li {
+    margin: 4px;
+}
+
+.legend .complete::before, .legend .ready::before {
+    content: ' ';
+    display: inline-block;
+    height: 16px;
+    width: 16px;
+    margin-right: 4px;
+}
+
+.legend .complete::before {
+    background-color: #77FF77;
+}
+
+.legend .ready::before {
+    background-color: #FFAA55;
+}
+
+@media print {
+    body {
+        background-color: #FFFFFF;
+        color: #111111;
+    }
+
+    .line {
+        background-color: #111111;
+        -webkit-print-color-adjust: exact;
+    }
+
+    button {
+        display: none;
+    }
+
+    .legend {
+        display: none;
+    }
 }

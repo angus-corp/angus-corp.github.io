@@ -16,7 +16,7 @@ var config;
 
 var state;
 var votes; // Non-null if and only if state.mode === PLAYING.
-var scoreboard;
+var scoreboards;
 var secondTicker;
 
 // INITIALIZATION
@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (hash) {
         hash = hash.slice(1);
         window.opener.postMessage('match.ready.' + hash, '*');
+        console.log('Awaiting external initialization...');
         return;
     }
 
@@ -67,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function init(config) {
     window.config = config;
+    console.log('Initializing...');
 
     state = {
         mode: PAUSED,
@@ -82,7 +84,7 @@ function init(config) {
     };
 
     votes = null; // Non-null if and only if state.mode === PLAYING.
-    scoreboard = null;
+    scoreboards = [];
     secondTicker = null;
 
     setState(state);
@@ -92,12 +94,12 @@ function init(config) {
 
     heyListen();
 
-    window.open('../scoreboard', 'scoreboard');
+    window.open('../scoreboard', '_blank');
     window.addEventListener('message', function (e) {
         if (e.origin !== window.location.origin || e.data !== 'scoreboard.ready')
             return;
 
-        scoreboard = e.source;
+        let scoreboard = e.source;
 
         scoreboard.setName(RED, config.redName);
         scoreboard.setName(BLUE, config.blueName);
@@ -115,7 +117,11 @@ function init(config) {
         if (state.mode === PAUSED) {
             scoreboard.startBreak();
         }
+
+        scoreboards.push(scoreboard);
     });
+
+    console.log('Initialized!');
 }
 
 // EVENTS
@@ -151,9 +157,7 @@ function aSecondHasPassed() {
         if (state.matchTime === 0) {
             // Pause and play the end-of-round buzzer.
             pause();
-            if (scoreboard) {
-              scoreboard.play(config.sounds.round);
-            }
+            playSound(config.sounds.round);
 
             // Move to the next round.
             changes.matchTime = config.roundDuration;
@@ -223,13 +227,13 @@ function setState(newState) {
     var edits = {};
 
     if (newState.hasOwnProperty('mode')) {
-        if (scoreboard) {
+        scoreboards.forEach(scoreboard => {
             if (state.mode === PAUSED && newState.mode !== PAUSED) {
                 scoreboard.endBreak();
             } else if (state.mode !== PAUSED && newState.mode === PAUSED) {
                 scoreboard.startBreak();
             }
-        }
+        });
 
         // Set this first to tell unload handler not to confirm departure.
         state.mode = newState.mode;
@@ -255,8 +259,14 @@ function setState(newState) {
             window.location.href = '../complete';
         } else if (state.mode === PLAYING) {
             $('pause-btn').textContent = PAUSE_TEXT;
+            $('round-inp').disabled = true;
+            $('match-time-m-inp').disabled = true;
+            $('match-time-s-inp').disabled = true;
         } else {
             $('pause-btn').textContent = PLAY_TEXT;
+            $('round-inp').disabled = false;
+            $('match-time-m-inp').disabled = false;
+            $('match-time-s-inp').disabled = false;
         }
     }
 
@@ -270,12 +280,12 @@ function setState(newState) {
         state.redPenalties  = chain('redPenalties',  newState, state);
         state.bluePenalties = chain('bluePenalties', newState, state);
 
-        if (scoreboard) {
+        scoreboards.forEach(scoreboard => {
             scoreboard.setScore(RED, getScore(state, RED));
             scoreboard.setScore(BLUE, getScore(state, BLUE));
             scoreboard.setPenalties(RED, state.redPenalties);
             scoreboard.setPenalties(BLUE, state.bluePenalties);
-        }
+        });
 
         edits['red-points'] = state.redPoints;
         edits['blue-points'] = state.bluePoints;
@@ -284,18 +294,18 @@ function setState(newState) {
     }
 
     if (newState.hasOwnProperty('round')) {
-        if (scoreboard) {
+        scoreboards.forEach(scoreboard => {
             scoreboard.setRound(getRoundText(newState));
-        }
+        });
 
         edits['round-inp'] = newState.round;
         state.round = newState.round;
     }
 
     if (newState.hasOwnProperty('matchTime')) {
-        if (scoreboard) {
+        scoreboards.forEach(scoreboard => {
             scoreboard.setMatchTime(newState.matchTime);
-        }
+        });
 
         edits['match-time-m-inp'] = Math.floor(newState.matchTime / 60);
         edits['match-time-s-inp'] = newState.matchTime % 60;
@@ -303,9 +313,9 @@ function setState(newState) {
     }
 
     if (newState.hasOwnProperty('breakTime')) {
-        if (scoreboard) {
+        scoreboards.forEach(scoreboard => {
             scoreboard.setBreakTime(newState.breakTime);
-        }
+        });
 
         edits['break-time-m-inp'] = Math.floor(newState.breakTime / 60);
         edits['break-time-s-inp'] = newState.breakTime % 60;
@@ -430,6 +440,17 @@ function heyListen() {
         }
     });
 
+    window.addEventListener('keydown', function (e) {
+        if (e.keyCode === 32) {
+            e.preventDefault();
+            if (state.mode === PAUSED) {
+                resume();
+            } else {
+                pause();
+            }
+        }
+    });
+
     $('end-btn').addEventListener('click', function () {
         let msg = 'Are you sure you want to end this match? \nThis cannot be undone.';
         if (confirm(msg)) {
@@ -468,51 +489,35 @@ function heyListen() {
 
     // PLAYER DATA
 
-    $('red-points').addEventListener('change', function () {
+    $('red-points').addEventListener('input', function () {
         setState({
             redPoints: Math.max(parseInt(this.value), 0)
         });
-        this.blur();
     });
 
-    $('blue-points').addEventListener('change', function () {
+    $('blue-points').addEventListener('input', function () {
         setState({
             bluePoints: Math.max(parseInt(this.value), 0)
         });
-        this.blur();
     });
 
-    $('red-penalties').addEventListener('change', function () {
+    $('red-penalties').addEventListener('input', function () {
         setState({
             redPenalties: Math.min(Math.max(parseInt(this.value), 0), 8)
         });
-        this.blur();
     });
 
-    $('blue-penalties').addEventListener('change', function () {
+    $('blue-penalties').addEventListener('input', function () {
         setState({
             bluePenalties: Math.min(Math.max(parseInt(this.value), 0), 8)
         });
-        this.blur();
     });
+}
 
-    // ACTION BUTTONS
-
-    $('red-up').addEventListener('click', function () {
-        setState({ redPoints: state.redPoints + 1 });
-    });
-
-    $('blue-up').addEventListener('click', function () {
-        setState({ bluePoints: state.bluePoints + 1 });
-    });
-
-    $('red-flag').addEventListener('click', function () {
-        setState({ redPenalties: Math.min(state.redPenalties + 1, 8) });
-    });
-
-    $('blue-flag').addEventListener('click', function () {
-        setState({ bluePenalties: Math.min(state.bluePenalties + 1, 8) });
-    });
+function playSound(sound) {
+    if (sound !== null) {
+        new Audio(sound).play();
+    }
 }
 
 window.addEventListener('beforeunload', function (e) {

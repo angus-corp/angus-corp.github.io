@@ -12,3 +12,9 @@
     font-size: 1.2em;
     border-bottom: 1px solid #DDDDDD;
 }
+
+h1 {
+    font-weight: 500;
+    margin: 0;
+    margin-bottom: 4px;
+}

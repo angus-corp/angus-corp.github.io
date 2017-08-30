@@ -9,41 +9,59 @@ class Bracket extends React.Component {
         };
     }
     
-    // downloadCsv() {
-    //     let csv = 'Match ID,Player 1 Name,Player 2 Name,Player 1 Score,Player 1 Points,Player 1 Penalties,Player 2 Score,Player 2 Points,Player 2 Penalties,Winner\n';
+    downloadCsv() {
+        let csv = 'Match ID,Player 1 Name,Player 2 Name,Player 1 Score,Player 1 Points,Player 1 Penalties,Player 2 Score,Player 2 Points,Player 2 Penalties,Winner\n';
         
-    //     let rounds = this.state.rounds,
-    //         children = [];
+        let rounds = this.state.rounds,
+            children = [];
 
-    //     let i = 0;
-    //     for (let a = 0, round; a < rounds.length; a++) {
-    //         round = rounds[a];
-    //         for (let n = 0; n < round.length; n++) {
-    //             let match = round[n];
-    //             let row = '' + i;
+        let i = this.props.firstMatchID;
+        for (let a = 0, round; a < rounds.length; a++) {
+            round = rounds[a];
+            for (let n = 0; n < round.length; n++) {
+                let match = round[n];
+                let row = '' + i;
                 
-    //             row += ',' + (getWinner(match.red) || '');
-    //             row += ',' + (getWinner(match.blue) || '');
+                row += ',' + csvEscape(getWinner(match.red) || '');
+                row += ',' + csvEscape(getWinner(match.blue) || '');
                 
-    //             let results = match.results;
-    //             if (results) {
-    //                 row += ',' + ;
-    //             }
-    //             // TODO: Player 1 Score.
-    //             // TODO: Player 1 Points.
-    //             // TODO: Player 1 Penalties.
-    //             // TODO: Player 2 Score.
-    //             // TODO: Player 2 Points.
-    //             // TODO: Player 2 Penalties.
-    //             // TODO: Winner.
+                let results = match.results;
+
+                if (results) {
+                    let redScore = results.red.points + (results.blue.penalties >> 1);
+                    let blueScore = results.blue.points + (results.red.penalties >> 1);
+
+                    row += ',' + csvEscape(redScore);
+                    row += ',' + csvEscape(results.red.points);
+                    row += ',' + csvEscape(results.red.penalties);
+                    row += ',' + csvEscape(blueScore);
+                    row += ',' + csvEscape(results.blue.points);
+                    row += ',' + csvEscape(results.blue.penalties);
+                } else {
+                    row += ',,,,,,';
+                }
+
+                let winner;
+                switch (match.winner) {
+                    case RED: winner = 'Player 1'; break;
+                    case BLUE: winner = 'Player 2'; break;
+                    default: winner = '';
+                }
+
+                row += ',' + csvEscape(winner);
                 
-    //             csv += row + '\n';
-    //             i += 1;
-    //         }
-    //     }
+                csv += row + '\n';
+                i += 1;
+            }
+        }
         
-    //     download('matches.csv', csv);
-    // }
+        download('matches.csv', csv);
+
+        function csvEscape(item) {
+            //TODO: Proper escaping.
+            return item.replace(',', ' ');
+        }
+    }
 
     render() {
         if (this.state.editing !== null) {
@@ -69,7 +87,7 @@ class Bracket extends React.Component {
         let rounds = this.state.rounds,
             children = [];
 
-        let i = 0;
+        let i = this.props.firstMatchID;
         for (let a = 0, round; a < rounds.length; a++) {
             round = rounds[a];
             for (let n = 0; n < round.length; n++) {
@@ -146,7 +164,7 @@ class Bracket extends React.Component {
                             window.open('../match#' + luid, '_blank');
                         }
                     }
-                }, e(MatchBox, { match: match })));
+                }, e(MatchBox, { id: id, match: match })));
 
                 if (round.length !== 1) {
                     children.push(e('div', {
@@ -200,9 +218,19 @@ class Bracket extends React.Component {
             height: rounds[0].length * (height + pad)
         };
 
+        let buttons = e('section', { paddingBottom: pad },
+            e('button', { onClick: () => this.downloadCsv() }, 'Export'),
+            e('button', { onClick: () => window.print() }, 'Print'));
+
+        let legend = e('ul', { className: 'legend' },
+            e('li', null, 'Match Legend'),
+            e('li', null, e('span', { className: 'complete' }, 'Complete')),
+            e('li', null, e('span', { className: 'ready' }, 'Ready (Click to Start)')));
+
         return e('section', { className: 'bracket' },
-            e('section', { style: style }, children));
-            //TODO: e('button', { paddingBottom: pad, onClick: () => this.downloadCsv() }, 'Export Results')
+            e('section', { style: style }, children),
+            buttons,
+            legend);
     }
 }
 
@@ -222,7 +250,7 @@ function MatchBox(props) {
         blueScore = match.results.blue.points + (match.results.red.penalties >> 1);
     }
 
-    return e('div', { className: className },
+    let competitors = e('div', { className: 'competitors' },
         e(MatchEntry, {
             player: match.red,
             winner: match.winner === RED,
@@ -233,6 +261,12 @@ function MatchBox(props) {
             winner: match.winner === BLUE,
             score: blueScore
         }));
+
+    let idbox = e('div', { className: 'match-id' }, '#' + props.id);
+
+    return e('div', { className: className },
+        competitors,
+        idbox);
 }
 
 function MatchEntry(props) {
