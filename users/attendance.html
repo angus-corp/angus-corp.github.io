@@ -35,8 +35,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         msg.remove();
 
-        let title = `Attendance for ${user.name || 'Unknown User'}`;
-        document.getElementById('page-title').textContent = title;
+        let userLink = document.createElement('a');
+        userLink.textContent = user.name || 'Unknown User';
+        userLink.href = `/users/view?id=${id}`;
+
+        let title = document.getElementById('page-title');
+        title.appendChild(document.createTextNode('Attendance for '));
+        title.appendChild(userLink);
 
         startCalendar(attendance, document.getElementById('calendar'));
     })
