@@ -42,10 +42,6 @@ main {
     cursor: default;
 }
 
-.match-box.complete .match-id {
-    display: none;
-}
-
 .match-box.unready {
     border-color: #777777;
     cursor: default;
@@ -118,10 +114,6 @@ input[type=radio] {
     flex-direction: column;
 }
 
-h1 {
-    margin-bottom: 0;
-}
-
 p {
     color: #777777;
     margin-top: 8px;
@@ -171,14 +163,7 @@ button:active::before {
 }
 
 .hinted {
-    text-decoration-line: underline;
-    text-decoration-style: dashed;
-    text-decoration-color: #AAA;
     cursor: help;
-}
-
-label.hinted input {    
-    text-decoration-line: none;
 }
 
 .legend {

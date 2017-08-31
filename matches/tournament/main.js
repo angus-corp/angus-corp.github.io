@@ -4,6 +4,7 @@ class Main extends React.Component {
         this.state = {
             configuring: true,
 
+            title: 'Tournament',
             numRounds: 3,
             majority: 3,
             judgementSpan: 600,
@@ -20,34 +21,37 @@ class Main extends React.Component {
     render() {
         if (this.state.configuring) {
             return e(TournamentForm, {
+                title:         this.state.title,
                 numRounds:     this.state.numRounds,
                 majority:      this.state.majority,
                 judgementSpan: this.state.judgementSpan,
                 roundDuration: this.state.roundDuration,
                 breakDuration: this.state.breakDuration,
                 players:       this.state.players,
-                firstMatchID: this.state.firstMatchID,
+                firstMatchID:  this.state.firstMatchID,
+                onTitle:         x => this.setState({ title: x }),
                 onNumRounds:     x => this.setState({ numRounds: x }),
                 onMajority:      x => this.setState({ majority: x }),
                 onJudgementSpan: x => this.setState({ judgementSpan: x }),
                 onRoundDuration: x => this.setState({ roundDuration: x }),
                 onRoundSound:    x => this.setState({ roundSound: x }),
                 onBreakDuration: x => this.setState({ breakDuration: x }),
-                onFirstMatchID: x => this.setState({ firstMatchID: x }),
+                onFirstMatchID:  x => this.setState({ firstMatchID: x }),
                 onPlayers:       x => this.setState({ players: x }),
                 onSubmit: () => this.setState({ configuring: false })
             });
         }
 
         return e(Bracket, {
-            players: this.state.players,
+            title:         this.state.title,
+            players:       this.state.players,
             roundSound:    this.state.roundSound,
             numRounds:     this.state.numRounds,
             majority:      this.state.majority,
             judgementSpan: this.state.judgementSpan,
             roundDuration: this.state.roundDuration,
             breakDuration: this.state.breakDuration,
-            firstMatchID: this.state.firstMatchID
+            firstMatchID:  this.state.firstMatchID
         });
     }
 }

@@ -28,7 +28,7 @@ window.TOOLBAR = {
             el.appendChild(a('Users', '/users'));
         }
 
-        el.appendChild(a('Match', '/matches'));
+        el.appendChild(a('Tournament', '/matches/tournament'));
         el.appendChild(divider);
 
         let id = BACKEND.id();

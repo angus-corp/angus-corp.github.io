@@ -117,7 +117,7 @@ class Bracket extends React.Component {
 
                         redName: getWinner(match.red),
                         blueName: getWinner(match.blue),
-                        matchID: '#' + id,
+                        matchID: id,
 
                         numRounds: this.props.numRounds,
                         majority: this.props.majority,
@@ -228,6 +228,7 @@ class Bracket extends React.Component {
             e('li', null, e('span', { className: 'ready' }, 'Ready (Click to Start)')));
 
         return e('section', { className: 'bracket' },
+            e('h1', null, this.props.title),
             e('section', { style: style }, children),
             buttons,
             legend);

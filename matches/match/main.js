@@ -262,11 +262,19 @@ function setState(newState) {
             $('round-inp').disabled = true;
             $('match-time-m-inp').disabled = true;
             $('match-time-s-inp').disabled = true;
+            $('blue-points').disabled = true;
+            $('blue-penalties').disabled = true;
+            $('red-points').disabled = true;
+            $('red-penalties').disabled = true;
         } else {
             $('pause-btn').textContent = PLAY_TEXT;
             $('round-inp').disabled = false;
             $('match-time-m-inp').disabled = false;
             $('match-time-s-inp').disabled = false;
+            $('blue-points').disabled = false;
+            $('blue-penalties').disabled = false;
+            $('red-points').disabled = false;
+            $('red-penalties').disabled = false;
         }
     }
 

@@ -16,6 +16,20 @@ class TournamentForm extends React.Component {
             e('label',
                 {
                     className: 'hinted',
+                    title: 'The title of the tournament.'
+                },
+                'Title',
+                e('input', {
+                    type: 'text',
+                    autoFocus: true,
+                    required: true, min: 1,
+                    value: props.title,
+                    onChange: e => props.onTitle(e.target.value)
+                })),
+
+            e('label',
+                {
+                    className: 'hinted',
                     title: 'The number of rounds in each match.'
                 },
                 'Rounds',

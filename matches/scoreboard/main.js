@@ -18,7 +18,7 @@ function setRound(round) {
 
 function setMatchID(matchID) {
     var elm = document.getElementById('match-id');
-    elm.textContent = matchID;
+    elm.textContent = '#' + pad4(matchID);
 }
 
 function setMatchTime(s) {
@@ -80,4 +80,9 @@ document.addEventListener('DOMContentLoaded', function () {
 function pad2(x) {
     x = x + '';
     return x.length < 2 ? ('00' + x).slice(-2) : x;
+}
+
+function pad4(x) {
+    x = x + '';
+    return x.length < 4 ? ('0000' + x).slice(-4) : x;
 }
